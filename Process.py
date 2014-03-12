@@ -6,12 +6,12 @@ Distributed Systems Practical
 Process.py
 """
 
-class Process(object):
+class Process():
     """
     docstring for Process
-    
+    Contains a list of Operations and keeps track of local Lampard Clock Time
     """
-    current_process = 0
+    current_process = None
 
     def __init__(self, name):
         operations = []
@@ -19,7 +19,7 @@ class Process(object):
 
         self.name = name
 
-class Operation(object):
+class Operation():
     """
     docstring for Operation
     Operation datastructure
@@ -32,7 +32,7 @@ class Operation(object):
         self.logical_time = logical_time
         self.target_process = target_process
 
-class Mutex(object):
+class Mutex():
     """
     docstring for Mutex
     Mutex block datastructure
