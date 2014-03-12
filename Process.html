@@ -12,7 +12,9 @@
     <p><tt>Vincent&nbsp;Steil<br>
 s1008380<br>
 Distributed&nbsp;Systems&nbsp;Practical<br>
-<a href="#Process">Process</a>.py</tt></p>
+<a href="#Process">Process</a>.py<br>
+Pydoc:<br>
+pydoc&nbsp;-w&nbsp;<a href="#Process">Process</a></tt></p>
 <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#aa55cc">
@@ -20,8 +22,9 @@ Distributed&nbsp;Systems&nbsp;Practical<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="sys.html">sys</a><br>
-</td><td width="25%" valign=top></td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="collections.html">collections</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ee77aa">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -29,25 +32,10 @@ Distributed&nbsp;Systems&nbsp;Practical<br>
     
 <tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
 <td width="100%"><dl>
-<dt><font face="helvetica, arial"><a href="Process.html#Mutex">Mutex</a>
-</font></dt><dt><font face="helvetica, arial"><a href="Process.html#Operation">Operation</a>
+<dt><font face="helvetica, arial"><a href="Process.html#Operation">Operation</a>
 </font></dt><dt><font face="helvetica, arial"><a href="Process.html#Process">Process</a>
 </font></dt></dl>
  <p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#ffc8d8">
-<td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#000000" face="helvetica, arial"><a name="Mutex">class <strong>Mutex</strong></a></font></td></tr>
-    
-<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
-<td colspan=2><tt>docstring&nbsp;for&nbsp;<a href="#Mutex">Mutex</a><br>
-<a href="#Mutex">Mutex</a>&nbsp;block&nbsp;datastructure<br>
-Contains&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#Operation">Operation</a><br>&nbsp;</tt></td></tr>
-<tr><td>&nbsp;</td>
-<td width="100%">Methods defined here:<br>
-<dl><dt><a name="Mutex-__init__"><strong>__init__</strong></a>(self)</dt></dl>
-
-</td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#ffc8d8">
 <td colspan=3 valign=bottom>&nbsp;<br>
@@ -59,7 +47,7 @@ Contains&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#Operation">Operation</a><br>&nb
 Basic&nbsp;datastructure&nbsp;for&nbsp;the&nbsp;simulator<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="Operation-__init__"><strong>__init__</strong></a>(self, operation_type, host_process, content, logical_time, target_process<font color="#909090">=None</font>)</dt></dl>
+<dl><dt><a name="Operation-__init__"><strong>__init__</strong></a>(self, operation_type, host_process, content, logical_time, mutex, target_process<font color="#909090">=None</font>, sent_message_ID<font color="#909090">=None</font>)</dt></dl>
 
 <dl><dt><a name="Operation-print_operation"><strong>print_operation</strong></a>(self)</dt></dl>
 
@@ -71,7 +59,8 @@ Basic&nbsp;datastructure&nbsp;for&nbsp;the&nbsp;simulator<br>&nbsp;</tt></td></t
     
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
 <td colspan=2><tt>docstring&nbsp;for&nbsp;<a href="#Process">Process</a><br>
-Contains&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#Operation">Operation</a>&nbsp;and&nbsp;<a href="#Mutex">Mutex</a>&nbsp;blocks&nbsp;and&nbsp;keeps&nbsp;track&nbsp;of&nbsp;local&nbsp;Lampard&nbsp;Clock&nbsp;Time<br>&nbsp;</tt></td></tr>
+Contains&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#Operation">Operation</a>&nbsp;and&nbsp;Mutex&nbsp;blocks&nbsp;and&nbsp;keeps&nbsp;track&nbsp;of&nbsp;local&nbsp;Lampard&nbsp;Clock&nbsp;Time<br>
+Assume&nbsp;that&nbsp;all&nbsp;Processes&nbsp;know&nbsp;of&nbsp;all&nbsp;other&nbsp;Processes<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
 <dl><dt><a name="Process-__init__"><strong>__init__</strong></a>(self, name)</dt></dl>
@@ -80,9 +69,9 @@ Contains&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#Operation">Operation</a>&nbsp;a
 Data and other attributes defined here:<br>
 <dl><dt><strong>current_process</strong> = None</dl>
 
-<dl><dt><strong>mutex</strong> = False</dl>
+<dl><dt><strong>mutex_block</strong> = False</dl>
 
-<dl><dt><strong>processes</strong> = {}</dl>
+<dl><dt><strong>processes</strong> = OrderedDict()</dl>
 
 </td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -91,6 +80,9 @@ Data and other attributes defined here:<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
     
 <tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><strong>output_file</strong> = &lt;open file 'Process', mode 'w'&gt;<br>
-<strong>print_function</strong> = _Feature((2, 6, 0, 'alpha', 2), (3, 0, 0, 'alpha', 0), 65536)</td></tr></table>
+<td width="100%"><strong>held</strong> = 2<br>
+<strong>output_file</strong> = &lt;open file 'Process', mode 'w'&gt;<br>
+<strong>print_function</strong> = _Feature((2, 6, 0, 'alpha', 2), (3, 0, 0, 'alpha', 0), 65536)<br>
+<strong>released</strong> = 0<br>
+<strong>wanted</strong> = 1</td></tr></table>
 </body></html>

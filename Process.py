@@ -10,6 +10,7 @@ pydoc -w Process
 
 from __future__ import print_function
 import sys
+import collections
 
 output_file = open(sys.argv[2], 'w')
 
@@ -29,17 +30,18 @@ class Process():
     dictionary of Processes
     Processes do not need to be stored in an ordered fashion. This lets us store the key to each process in each operation for both host_process and target_process
     """
-    processes = {}
+    processes = collections.OrderedDict()         
     current_process = None
-    mutex = False                           # only used while initially reading in data from file not during mutex arbitration
+    mutex_block = False                           # only used while initially reading in data from file not during mutex arbitration
 
     def __init__(self, name):
         self.operations = []
         self.logical_time = 0
         self.name = name
-        self.status = released              # keeps track of mutual exclusion enforcement state for Ricarta & Agrawala algorithm
+        self.status = released                    # keeps track of mutual exclusion enforcement state for Ricarta & Agrawala algorithm
         self.sent_message_ID_counter = 0
-        self.received_message_IDs = {}      # process name key leads to list of IDs
+        self.received_message_IDs = collections.OrderedDict()      # process name key leads to list of IDs to check which msgs we've seen already
+        self.operation_counter = 0
         
 
 class Operation():
@@ -47,14 +49,24 @@ class Operation():
     docstring for Operation
     Operation datastructure
     Basic datastructure for the simulator
+    operation_type can be:
+        recv
+        send
+        print
+        mtx_req_send
+        mtx_req_recv
+        mtx_req_grant
+        mtx_req_deny
+
     """
-    def __init__(self, operation_type, host_process, content, logical_time, target_process = None, sent_message_ID = None):
+    def __init__(self, operation_type, host_process, content, logical_time, mutex, target_process = None, sent_message_ID = None):
         self.operation_type = operation_type
         self.host_process = host_process
         self.content = content
         self.logical_time = logical_time
         self.target_process = target_process
         self.sent_message_ID = sent_message_ID
+        self.mutex = mutex
 
     def print_operation(self):
         if self.operation_type == "print":
@@ -64,17 +76,6 @@ class Operation():
         elif self.operation_type == "recv":
             print("received", self.host_process, self.content, self.target_process, self.logical_time, file = output_file)
             
-
-class Mutex():
-    """
-    docstring for Mutex
-    Mutex block datastructure
-    Contains a list of Operation
-    """
-    def __init__(self):
-        self.ops = []
-        
-
-                      
+                 
 
 
