@@ -4,6 +4,8 @@ Vincent Steil
 s1008380
 Distributed Systems Practical
 Process.py
+Pydoc:
+pydoc -w Process
 """
 
 from __future__ import print_function
@@ -11,11 +13,17 @@ import sys
 
 output_file = open(sys.argv[2], 'w')
 
+# process state definitions
+released = 0    # Not in or requiring entry to the critical section (Mutex block)
+wanted = 1      # Requiring entry to the critical section
+held = 2        # Currently has access to critical section
+
 
 class Process():
     """
     docstring for Process
     Contains a list of Operation and Mutex blocks and keeps track of local Lampard Clock Time
+    Assume that all Processes know of all other Processes
     """
     """
     dictionary of Processes
@@ -23,14 +31,16 @@ class Process():
     """
     processes = {}
     current_process = None
-    mutex = False
- 
+    mutex = False                           # only used while initially reading in data from file not during mutex arbitration
 
     def __init__(self, name):
         self.operations = []
         self.logical_time = 0
-
         self.name = name
+        self.status = released              # keeps track of mutual exclusion enforcement state for Ricarta & Agrawala algorithm
+        self.sent_message_ID_counter = 0
+        self.received_message_IDs = {}      # process name key leads to list of IDs
+        
 
 class Operation():
     """
@@ -38,12 +48,13 @@ class Operation():
     Operation datastructure
     Basic datastructure for the simulator
     """
-    def __init__(self, operation_type, host_process, content, logical_time, target_process = None):
+    def __init__(self, operation_type, host_process, content, logical_time, target_process = None, sent_message_ID = None):
         self.operation_type = operation_type
         self.host_process = host_process
         self.content = content
         self.logical_time = logical_time
         self.target_process = target_process
+        self.sent_message_ID = sent_message_ID
 
     def print_operation(self):
         if self.operation_type == "print":
