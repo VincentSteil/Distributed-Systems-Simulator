@@ -6,17 +6,25 @@ Distributed Systems Practical
 Process.py
 """
 
+from __future__ import print_function
+import sys
+
+output_file = open(sys.argv[2], 'w')
+
+
 class Process():
     """
     docstring for Process
-    Contains a list of Operations and keeps track of local Lampard Clock Time
+    Contains a list of Operation and Mutex blocks and keeps track of local Lampard Clock Time
     """
-    # dictionary of Processes
-    # Processes do not need to be stored in an ordered fashion. This lets us store the key to each process in each operation for both host_process and target_process
+    """
+    dictionary of Processes
+    Processes do not need to be stored in an ordered fashion. This lets us store the key to each process in each operation for both host_process and target_process
+    """
     processes = {}
     current_process = None
     mutex = False
-
+ 
 
     def __init__(self, name):
         self.operations = []
@@ -39,18 +47,18 @@ class Operation():
 
     def print_operation(self):
         if self.operation_type == "print":
-            print("printed", self.host_process, self.content, self.logical_time)
+            print("printed", self.host_process, self.content, self.logical_time, file = output_file)
         elif self.operation_type == "sent":
-            print("sent", self.host_process, self.content, self.target_process, self.logical_time)
+            print("sent", self.host_process, self.content, self.target_process, self.logical_time, file = output_file)
         elif self.operation_type == "recv":
-            print("received", self.host_process, self.content, self.target_process, self.logical_time)
+            print("received", self.host_process, self.content, self.target_process, self.logical_time, file = output_file)
             
 
 class Mutex():
     """
     docstring for Mutex
     Mutex block datastructure
-    Contains a list of Operations
+    Contains a list of Operation
     """
     def __init__(self):
         self.ops = []
