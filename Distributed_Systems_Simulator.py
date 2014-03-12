@@ -37,12 +37,19 @@ def read_simulator_input():
             elif (line[0] == "end" and line[1] == "mutex"):
                 Process.mutex = False
 
-            elif line[0] == "send" or line[0] == "recv":
+            elif line[0] == "send":
                 #Process.processes[Process.current_process].logical_time += 1
                 if(Process.mutex):              
-                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(line[0], Process.processes[Process.current_process], line[2], Process.processes[Process.current_process].logical_time, line[1]))
+                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(line[0], Process.processes[Process.current_process], line[2], Process.processes[Process.current_process].logical_time, target_process = line[1], sent_message_ID = Process.processes[Process.current_process].sent_message_ID_counter))
                 else:
-                    Process.processes[Process.current_process].operations.append(Operation(line[0], Process.processes[Process.current_process], line[2], Process.processes[Process.current_process].logical_time, line[1]))           
+                    Process.processes[Process.current_process].operations.append(Operation(line[0], Process.processes[Process.current_process], line[2], Process.processes[Process.current_process].logical_time, target_process = line[1], sent_message_ID = Process.processes[Process.current_process].sent_message_ID_counter))           
+
+            elif line[0] == "recv":
+                #Process.processes[Process.current_process].logical_time += 1
+                if(Process.mutex):              
+                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(line[0], Process.processes[Process.current_process], line[2], Process.processes[Process.current_process].logical_time, target_process = line[1]))
+                else:
+                    Process.processes[Process.current_process].operations.append(Operation(line[0], Process.processes[Process.current_process], line[2], Process.processes[Process.current_process].logical_time, target_process = line[1]))           
 
             elif line[0] == "print":
                 #Process.processes[Process.current_process].logical_time += 1
@@ -54,7 +61,7 @@ def read_simulator_input():
 
 
 
-
+ 
 
 
 
