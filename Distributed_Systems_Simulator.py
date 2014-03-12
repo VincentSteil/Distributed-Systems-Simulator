@@ -35,10 +35,9 @@ def read_simulator_input():
 
             elif line[0] == "send":
                 if(Process.mutex_block):              
-                    Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = True, sent_message_ID = Process.processes[Process.current_process].sent_message_ID_counter))
+                    Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = True))
                 else:
-                    Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = False, sent_message_ID = Process.processes[Process.current_process].sent_message_ID_counter))           
-                Process.processes[Process.current_process].sent_message_ID_counter += 1
+                    Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = False))
 
             elif line[0] == "recv":
                 if(Process.mutex_block):              
@@ -53,20 +52,25 @@ def read_simulator_input():
 
 def run_simulator():
     i = 0
-    length = [len(ops) for pro in Process.processes.values() for ops in pro.operations]     # find the lengths of the operations arrays of the processes
+    max_ops = [len(ops) for pro in Process.processes.values() for ops in pro.operations]     # find the lengths of the operations arrays of the processes
 
-    while i < max(length):      # iterate until the end of each process is found
+    while i < max(max_ops):      # iterate until the end of each process is found
        i += 1
 
        # pro is the current process being executed
        for pro in Process.processes.values():
-            pro.logical_time += 1
-            if pro.status == wanted:
+            # don't run if there are no more operations
+            max_ops = max(max_ops, len(pro.operations))
+            if i < max_ops:
+                pro.logical_time += 1
+                if pro.status == held:
+                    # if the status is held, the process is in a mutex block and can do whatever it wants
+                    run_operation(pro)
 
 
 
 
-            elif pro.operations[pro.operation_counter].mutex == True and pro.status == released:
+                elif pro.operations[pro.operation_counter].mutex == True and pro.status == released:
                     pro.status = wanted
                     # store Lampard clock value of the initial request 
                     # we can't actually multicast, so we store the intial Lampard clock value of the multicast
@@ -75,8 +79,7 @@ def run_simulator():
                     # generate the mtx request msgs by adding them to the current front of the requesting process
                     for pro_multicast in Process.processes.values():
                         if pro_multicast.name != pro.name:
-                            pro.insert(pro.operation_counter, Operation(operation_type = "mtx_req_send", host_process = pro.name, content = "mtx_req_send", logical_time = pro.logical_time, mutex = False, target_process = pro_multicast.name, sent_message_ID = pro.sent_message_ID_counter))
-                            pro.sent_message_ID_counter += 1
+                            pro.insert(pro.operation_counter, Operation(operation_type = "mtx_req_send", host_process = pro.name, content = "mtx_req_send", logical_time = pro.logical_time, mutex = False, target_process = pro_multicast.name))
 
                     # work off the first mtx request and add it to the relevant process
                     assert pro.operations[operation_counter].target_process.operation_type == "mtx_req_send"
@@ -84,11 +87,38 @@ def run_simulator():
                     # queue send the first mtx_req msg(and thus queue the first  mtx_req_recv msg on the target process)
                     queue_mtx_req_recv(pro,recv_mtx_pro)
 
+                    # increment operation counter, as we're did work
+                    pro.operation_counter += 1
 
-            else:
+                else:
+
+def run_operation(host_pro):
+    """
+    Run a single STANDARD (send, print, recv) operation from host_pro
+    """
+    # current operation
+    op = host_pro.operations[host_pro.operation_counter]
+    assert op.operation_type in ["send","recv","print"]
+
+    if op.operation_type == "send":
+        op.logical_time = host_pro.logical_time
+        # the list of send messages at the receiver is used to transmit the timestamps, as those were just dummy values when first reading the data in
+        Process.processes[op.target_process].received_messages[(host_pro.name, op.content)] = host_pro.logical_time
+        host_pro.operation_counter += 1
+
+    elif op.operation_type == "print":
+        op.logical_time = host_pro.logical_time
+        host_pro.operation_counter += 1
+
+    elif op.operation_type == "recv":
+        if (op.target_process, op.content) in host_pro.received_messages:
+            op.logical_time = max(host_pro.logical_time, host_pro.received_messages[(op.target_process, op.content)])
+            host_pro.operation_counter += 1
+        else:
+            # if the message hasn't been sent yet, it's not in host_pro.received_messages, so we have a round of do nothing until the process sends the msg
+            pass
 
 
-            pro.operation_counter += 1
 
 
 # call this function when you need to queue a mtx_req_recv message     

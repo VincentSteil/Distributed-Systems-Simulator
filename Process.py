@@ -38,10 +38,10 @@ class Process():
         self.operations = []
         self.logical_time = 0
         self.name = name
-        self.status = released                    # keeps track of mutual exclusion enforcement state for Ricarta & Agrawala algorithm
-        self.sent_message_ID_counter = 0
-        self.received_message_IDs = collections.OrderedDict()      # process name key leads to list of IDs to check which msgs we've seen already
+        self.status = released                    # keeps track of mutual exclusion enforcement state for Ricarta & Agrawala algorithm   
+        self.received_messages = collections.OrderedDict() # key = (sender_name,content) leads to list of timestamps for that msg (to enable duplicates)     
         self.operation_counter = 0
+        self.mtx_req_send_time = None             # ID is implicitely stored, time_stamp is explicitely stored
         
 
 class Operation():
@@ -56,16 +56,13 @@ class Operation():
         mtx_req_send
         mtx_req_recv
         mtx_req_grant
-        mtx_req_deny
-
     """
-    def __init__(self, operation_type, host_process, content, logical_time, mutex, target_process = None, sent_message_ID = None):
+    def __init__(self, operation_type, host_process, content, logical_time, mutex, target_process = None):
         self.operation_type = operation_type
         self.host_process = host_process
         self.content = content
         self.logical_time = logical_time
         self.target_process = target_process
-        self.sent_message_ID = sent_message_ID
         self.mutex = mutex
 
     def print_operation(self):
