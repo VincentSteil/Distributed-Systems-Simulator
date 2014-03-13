@@ -57,7 +57,11 @@ operation_type&nbsp;can&nbsp;be:<br>
 <td width="100%">Methods defined here:<br>
 <dl><dt><a name="Operation-__init__"><strong>__init__</strong></a>(self, operation_type, host_process, content, logical_time, mutex, target_process<font color="#909090">=None</font>)</dt></dl>
 
-<dl><dt><a name="Operation-print_operation"><strong>print_operation</strong></a>(self)</dt></dl>
+<dl><dt><a name="Operation-print_op_console"><strong>print_op_console</strong></a>()</dt><dd><tt>Prints&nbsp;operation&nbsp;to&nbsp;console<br>
+Can&nbsp;print&nbsp;all&nbsp;operation_type</tt></dd></dl>
+
+<dl><dt><a name="Operation-print_operation"><strong>print_operation</strong></a>(self)</dt><dd><tt>Prints&nbsp;operation&nbsp;to&nbsp;the&nbsp;file&nbsp;defined&nbsp;in&nbsp;output_file<br>
+Prints&nbsp;error&nbsp;msg&nbsp;to&nbsp;console&nbsp;if&nbsp;trying&nbsp;to&nbsp;print&nbsp;mtx_msg</tt></dd></dl>
 
 </td></tr></table> <p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
@@ -82,6 +86,14 @@ Data and other attributes defined here:<br>
 <dl><dt><strong>processes</strong> = OrderedDict()</dl>
 
 </td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-print_ordered_all_operations"><strong>print_ordered_all_operations</strong></a>()</dt></dl>
+</td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#55aa55">
 <td colspan=3 valign=bottom>&nbsp;<br>

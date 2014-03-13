@@ -29,25 +29,34 @@ def read_simulator_input():
 
             elif (line[0] == "begin" and line[1] == "mutex"):
                 Process.mutex_block = True
+                Process.processes[Process.current_process].operations.append(Mutex())
 
             elif (line[0] == "end" and line[1] == "mutex"):
                 Process.mutex_block = False
 
             elif line[0] == "send":
-                if(Process.mutex_block):              
-                    Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = True))
+                if(Process.mutex_block):
+                    assert type(Process.processes[Process.current_process].operations) is Mutex               
+                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = True))
                 else:
                     Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, target_process = line[1], mutex = False))
 
             elif line[0] == "recv":
-                if(Process.mutex_block):              
-                    Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, mutex = True, target_process = line[1],))
+                if(Process.mutex_block):
+                    assert type(Process.processes[Process.current_process].operations) is Mutex              
+                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, mutex = True, target_process = line[1],))
                 else:
                     Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process].name, content = line[2], logical_time = Process.processes[Process.current_process].logical_time, mutex = False, target_process = line[1]))           
 
             elif line[0] == "print":
-                # print operation is always a single process mutex block
-                Process.processes[Process.current_process].operations.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process], content = line[1], logical_time = Process.processes[Process.current_process].logical_time, mutex = True))
+                if(Process.mutex_block):
+                    assert type(Process.processes[Process.current_process].operations) is Mutex
+                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process], content = line[1], logical_time = Process.processes[Process.current_process].logical_time, mutex = True))
+                else:
+                    Process.processes[Process.current_process].operations.append(Mutex())
+                    # print operation is always a single process mutex block
+                    assert type(Process.processes[Process.current_process].operations) is Mutex
+                    Process.processes[Process.current_process].operations[-1].ops.append(Operation(operation_type = line[0], host_process = Process.processes[Process.current_process], content = line[1], logical_time = Process.processes[Process.current_process].logical_time, mutex = True))
 
 
 def run_simulator():
@@ -63,10 +72,13 @@ def run_simulator():
             max_ops = max(max_ops, len(pro.operations))
             if i < len(pro.operations):
                 pro.logical_time += 1
+                pro.operations[pro.operation_counter] = op
                 if pro.status == held:
+                    assert type(op) is Mutex
                     # if the status is held, the process is in a mutex block and can do whatever it wants
-                    if pro.operations[pro.operation_counter].operation_type in ["send","recv", "print"]:
+                    if op.operations[mutex_operation_offset].operation_type in ["send","recv", "print"]:
                         run_basic_operation(pro)
+                        mutex_operation_offset += 1
                     # mtx_req_send is dealt with in the above case, that means we're left dealing with mtx_req_recv, mtx_req_grant_recv, and mtx_req_grant_send  
                     elif pro.operations[pro.operation_counter].operation_type in ["mtx_req_recv", "mtx_req_grant_recv", "mtx_req_grant_send"]:
                         run_mtx_operation(pro)
@@ -110,10 +122,12 @@ def run_simulator():
 
 def run_mtx_operation(host_pro):
     op = host_pro.operations[host_pro.operation_counter]
+    # op should not be a mutex block, as mtx msgs can not be in mutex blocks
+    assert type(op) is not Mutex
     assert op.operation_type in ["mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]
 
-    if op.status == held and op.mutex == False:
-        op.status = released
+    if host_pro.status == held and type(op) is not Mutex:
+        host_pro.status = released
 
     if op.operation_type == "mtx_req_recv":
         # the recv msg has already been slotted into the correct place, thus we can queue the mtx_req_grant_send msg in the front, as
@@ -129,7 +143,7 @@ def run_mtx_operation(host_pro):
         if len(set(Process.processes).difference(host_pro.mtx_req_grant_recv_set)) < 2:
             host_pro.state = held
             # empty set of request granters
-            for ID in host_pro.mtx_req_grant_recv_set
+            for ID in host_pro.mtx_req_grant_recv_set:
                 host_pro.mtx_req_grant_recv_set.remove(ID)
 
 
@@ -137,40 +151,68 @@ def run_mtx_operation(host_pro):
 
 def run_basic_operation(host_pro):
     """
-    Run a single operation (send, print, recv) from host_pro
+    Run a single operation (send, recv) from host_pro
     """
     # current operation
     op = host_pro.operations[host_pro.operation_counter]
-    assert op.operation_type in ["send","recv","print"]
+    assert op.operation_type in ["send","recv"]
 
-    if op.status == held and op.mutex == False:
-        op.status = released
+    if host_pro.status == held and type(op) is not Mutex:
+        host_pro.status = released
 
-    if op.operation_type == "send":
-        op.logical_time = host_pro.logical_time
-        # the list of send messages at the receiver is used to transmit the timestamps, as those were just dummy values when first reading the data in
-        Process.processes[op.target_process].received_messages[(host_pro.name, op.content)].append(host_pro.logical_time)
+    # for Mutex blocks
+    if type(op) is Mutex:
+        mtx = host_pro.operations[host_pro.operation_counter]
+        op = mtx.operations[op.mutex_operation_offset]
+        if (mtx.mutex_operation_offset < len(mtx.operations))
+            if op.operation_type == "send":
+                op.logical_time = host_pro.logical_time
+                # the list of send messages at the receiver is used to transmit the timestamps, as those were just dummy values when first reading the data in
+                Process.processes[op.target_process].received_messages[(host_pro.name, op.content)].append(host_pro.logical_time)
+                mtx.mutex_operation_offset += 1
 
-    elif op.operation_type == "print":
-        op.logical_time = host_pro.logical_time
+            elif op.operation_type == "recv":
+                if (op.target_process, op.content) in host_pro.received_messages:
+                    if len(host_pro.received_messages[(op.target_process, op.content)]) > 0:
+                        timestamp = max(host_pro.logical_time, min(host_pro.received_messages[(op.target_process, op.content)]))
+                        op.logical_time = timestamp
+                        host_pro.logical_time = timestamp
+                        host_pro.received_messages.remove(min(host_pro.received_messages[(op.target_process, op.content)]))
+                        mtx.mutex_operation_offset += 1
 
-    elif op.operation_type == "recv":
-        if (op.target_process, op.content) in host_pro.received_messages:
-            if len(host_pro.received_messages[(op.target_process, op.content)]) > 0:
-                timestamp = max(host_pro.logical_time, min(host_pro.received_messages[(op.target_process, op.content)]))
-                op.logical_time = timestamp
-                host_pro.logical_time = timestamp
-                host_pro.received_messages.remove(min(host_pro.received_messages[(op.target_process, op.content)]))
-
+                else:
+                    # if the message hasn't been sent yet, it's not in host_pro.received_messages, so we have a round of do nothing until the process sends the msg
+                    # decrement logical_time, as we do nothing, yet increment above
+                    host_pro.logical_time -= 1
         else:
-            # if the message hasn't been sent yet, it's not in host_pro.received_messages, so we have a round of do nothing until the process sends the msg
-            # decrement logical_time, as we do nothing, yet increment above
-            host_pro.logical_time -= 1
-            host_pro.operation_counter -= 1
+            # if the mutex block is over, increment the host op counter to get out of the mutex block
+            host_pro.operation_counter += 1 
+
+    # non Mutex operation
+    else:    
+        if op.operation_type == "send":
+            op.logical_time = host_pro.logical_time
+            # the list of send messages at the receiver is used to transmit the timestamps, as those were just dummy values when first reading the data in
+            Process.processes[op.target_process].received_messages[(host_pro.name, op.content)].append(host_pro.logical_time)
+            host_pro.operation_counter += 1
+
+        elif op.operation_type == "recv":
+            if (op.target_process, op.content) in host_pro.received_messages:
+                if len(host_pro.received_messages[(op.target_process, op.content)]) > 0:
+                    timestamp = max(host_pro.logical_time, min(host_pro.received_messages[(op.target_process, op.content)]))
+                    op.logical_time = timestamp
+                    host_pro.logical_time = timestamp
+                    host_pro.received_messages.remove(min(host_pro.received_messages[(op.target_process, op.content)]))
+                    host_pro.operation_counter += 1
+
+            else:
+                # if the message hasn't been sent yet, it's not in host_pro.received_messages, so we have a round of do nothing until the process sends the msg
+                # decrement logical_time, as we do nothing, yet increment above
+                host_pro.logical_time -= 1
 
 
 
-    host_pro.operation_counter += 1
+    
 
 
 
@@ -180,37 +222,42 @@ def queue_mtx_req_recv(host_pro, target_pro):
     This function queues a mtx_req_recv message and is called when dealing with a mtx_req_send message at the host processor
     This function DOES NOT !! send out the mtx_req_grant message by queueing that with the requesting process. That is done when the mtx_req_grant sender is actually the operating host.
     """
+
     # just add it if the receiving process is not in a mutex block
-    if target_pro.status == released
+    if target_pro.status == released:
         target_pro.operations.insert(target_pro.operation_counter, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
 
     # find the end of the mutex block and mutex request queue and add the mtx_req_recv message to the end of it
-    elif target_pro.status == held 
+    elif target_pro.status == held: 
         mutex_offset = 1
 
-        while target_pro.operations[target_pro.operation_counter + mutex_offset].mutex == True or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv", "mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]:
+        while (type(target_pro.operations[target_pro.operation_counter + mutex_offset]) is Mutex) or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv", "mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]:
             mutex_offset += 1
 
         target_pro.operations.insert(target_pro.operation_counter + mutex_offset, Operation(operation_type = "mtx_req_recv", host_process = recv_target_promtx_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
 
     elif target_pro.status == wanted:
+        # target_pro wins, add to end of mutex block, mtx msg queue
         if target_pro.mtx_req_send_time < host_pro.mtx_req_send_time:
             mutex_offset = 1
              # find the end of the mutex block and mutex request queue and add the mtx_req_recv message to the end of it
-            while target_pro.operations[target_pro.operation_counter + mutex_offset].mutex == True or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv",  "mtx_req_send", "mtx_req_grant"]:
+            while (type(target_pro.operations[target_pro.operation_counter + mutex_offset]) is Mutex) or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv",  "mtx_req_send", "mtx_req_grant"]:
                 mutex_offset += 1
             target_pro.operations.insert(target_pro.operation_counter + mutex_offset, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
         
+        # host_pro wins, add msg to beginning of current target_pro operations
         elif target_pro.mtx_req_send_time > host_pro.mtx_req_send_time:
             target_pro.operations.insert(target_pro.operation_counter, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
 
+        # target_pro wins tie breaker, add to end of mutex block, mtx msg queue
         elif target_pro.name < host_pro.name:
             mutex_offset = 1
              # find the end of the mutex block and mutex request queue and add the mtx_req_recv message to the end of it
-            while target_pro.operations[target_pro.operation_counter + mutex_offset].mutex == True or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv",  "mtx_req_send", "mtx_req_grant"]:
+            while (type(target_pro.operations[target_pro.operation_counter + mutex_offset]) is Mutex) or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv",  "mtx_req_send", "mtx_req_grant"]:
                 mutex_offset += 1
             target_pro.operations.insert(target_pro.operation_counter + mutex_offset, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
         
+        # host_pro wins tie breaker, add msg to beginning of current target_pro operations
         else:
              target_pro.operations.insert(target_pro.operation_counter, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
     
