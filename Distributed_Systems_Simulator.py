@@ -65,10 +65,11 @@ def run_simulator():
                 pro.logical_time += 1
                 if pro.status == held:
                     # if the status is held, the process is in a mutex block and can do whatever it wants
-                    run_operation(pro)
-
-
-
+                    if pro.operations[pro.operation_counter].operation_type in ["send","recv", "print"]:
+                        run_basic_operation(pro)
+                    # mtx_req_send is dealt with in the above case, that means we're left dealing with mtx_req_recv, mtx_req_grant_recv, and mtx_req_grant_send  
+                    elif pro.operations[pro.operation_counter].operation_type in ["mtx_req_recv", "mtx_req_grant_recv", "mtx_req_grant_send":
+                        run_mtx_operation(pro)
 
                 elif pro.operations[pro.operation_counter].mutex == True and pro.status == released:
                     pro.status = wanted
@@ -87,37 +88,78 @@ def run_simulator():
                     # queue send the first mtx_req msg(and thus queue the first  mtx_req_recv msg on the target process)
                     queue_mtx_req_recv(pro,recv_mtx_pro)
 
-                    # increment operation counter, as we're did work
-                    pro.operation_counter += 1
+                elif pro.operations[pro.operation_counter].mutex == False and pro.status == released:
+                    if pro.operations[pro.operation_counter].operation_type in ["send","recv"]:
+                        run_basic_operation(pro)
+                    # mtx_req_send is dealt with in the above case, that means we're left dealing with mtx_req_recv, mtx_req_grant_recv, and mtx_req_grant_send  
+                    elif pro.operations[pro.operation_counter].operation_type == "mtx_req_recv":
+
+                        
+
+
 
                 else:
 
-def run_operation(host_pro):
+def run_mtx_operation(host_pro):
+    op = host_pro.operations[host_pro.operation_counter]
+    assert op.operation_type in ["mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]
+
+    if op.status == held and op.mutex == False:
+        op.status = released
+
+    if op.operation_type == "mtx_req_recv":
+        # the recv msg has already been slotted into the correct place, thus we can queue the mtx_req_grant_send msg in the front, as 
+        host_pro.operations.insert(host_pro.operation_counter, Operation(operation_type = "mtx_req_grant_send", host_process = host_pro.name, content = "mtx_req_grant_send", logical_time = host_pro.logical_time, mutex = False, target_process = op.target_process))
+
+
+    elif op.operation_type == "mtx_req_grant_send":
+        op.target_process.operations.insert(op.target_process.operations.operation_counter, Operation(operation_type = "mtx_req_grant_recv", host_process = target_pro.name, content = "mtx_req_grant_recv", logical_time = host_pro.logical_time, mutex = False, target_process = op.target_process))
+
+    elif op.operation_type == "mtx_req_grant_recv":
+        host_pro.mtx_req_grant_recv_set.add(op.target_process)
+        if len(set(Process.processes).difference(host_pro.mtx_req_grant_recv_set)) < 2:
+            host_pro.state = held
+            # empty set of request granters
+            for ID in host_pro.mtx_req_grant_recv_set
+                host_pro.mtx_req_grant_recv_set.remove(ID)
+
+
+    host_pro.operation_counter += 1
+
+def run_basic_operation(host_pro):
     """
-    Run a single STANDARD (send, print, recv) operation from host_pro
+    Run a single operation (send, print, recv) from host_pro
     """
     # current operation
     op = host_pro.operations[host_pro.operation_counter]
     assert op.operation_type in ["send","recv","print"]
 
+    if op.status == held and op.mutex == False:
+        op.status = released
+
     if op.operation_type == "send":
         op.logical_time = host_pro.logical_time
         # the list of send messages at the receiver is used to transmit the timestamps, as those were just dummy values when first reading the data in
-        Process.processes[op.target_process].received_messages[(host_pro.name, op.content)] = host_pro.logical_time
-        host_pro.operation_counter += 1
+        Process.processes[op.target_process].received_messages[(host_pro.name, op.content)].append(host_pro.logical_time)
 
     elif op.operation_type == "print":
         op.logical_time = host_pro.logical_time
-        host_pro.operation_counter += 1
 
     elif op.operation_type == "recv":
         if (op.target_process, op.content) in host_pro.received_messages:
-            op.logical_time = max(host_pro.logical_time, host_pro.received_messages[(op.target_process, op.content)])
-            host_pro.operation_counter += 1
+            if len(host_pro.received_messages[(op.target_process, op.content)]) > 0:
+                op.logical_time = max(host_pro.logical_time, min(host_pro.received_messages[(op.target_process, op.content)]))
+                host_pro.received_messages.remove(min(host_pro.received_messages[(op.target_process, op.content)]))
+
         else:
             # if the message hasn't been sent yet, it's not in host_pro.received_messages, so we have a round of do nothing until the process sends the msg
-            pass
+            # decrement logical_time, as we do nothing, yet increment above
+            host_pro.logical_time -= 1
+            host_pro.operation_counter -= 1
 
+
+
+    host_pro.operation_counter += 1
 
 
 
@@ -160,7 +202,9 @@ def queue_mtx_req_recv(host_pro, target_pro):
         
         else:
              target_pro.operations.insert(target_pro.operation_counter, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
-
+    
+    # increment operation counter, as we did work
+    pro.operation_counter += 1
 
  
 

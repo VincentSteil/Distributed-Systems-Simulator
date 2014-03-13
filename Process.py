@@ -55,7 +55,8 @@ class Operation():
         print
         mtx_req_send
         mtx_req_recv
-        mtx_req_grant
+        mtx_req_grant_send
+        mtx_req_grant_recv
     """
     def __init__(self, operation_type, host_process, content, logical_time, mutex, target_process = None):
         self.operation_type = operation_type
