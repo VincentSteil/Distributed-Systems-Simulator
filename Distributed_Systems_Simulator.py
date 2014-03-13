@@ -90,6 +90,9 @@ def read_simulator_input(infile):
         print("Finished reading in data")
 
 def run_simulator():
+    """
+    runs the simulator until all processes have finished
+    """
     print("Starting simulator run")
     no_more_ops = False     # find the lengths of the operations arrays of the Process.processes
     i = 0
@@ -167,6 +170,10 @@ def run_simulator():
 
 
 def run_mtx_operation(host_pro):
+    """
+    execute a single mtx operation
+    can handle mutex operations as well
+    """
     op = host_pro.operations[host_pro.operation_counter]
     target_pro = Process.processes[op.target_process]
     # op should not be a mutex block, as mtx msgs can not be in mutex blocks
@@ -203,6 +210,7 @@ def run_mtx_operation(host_pro):
 def run_basic_operation(host_pro):
     """
     Run a single operation (send, recv, print) from host_pro
+    can hangle mutex operations
     """
 
     # current operation

@@ -22,28 +22,25 @@ pydoc&nbsp;-w&nbsp;Distributed_Systems_Simulator</tt></p>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
     
 <tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Process.html">Process</a><br>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="Process_DS.html">Process_DS</a><br>
+</td><td width="25%" valign=top><a href="getopt.html">getopt</a><br>
 </td><td width="25%" valign=top><a href="sys.html">sys</a><br>
-</td><td width="25%" valign=top></td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
 <table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
 <tr bgcolor="#eeaa77">
 <td colspan=3 valign=bottom>&nbsp;<br>
 <font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
     
 <tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><dl><dt><a name="-queue_mtx_req_recv"><strong>queue_mtx_req_recv</strong></a>(host_pro, target_pro)</dt><dd><tt>This&nbsp;function&nbsp;queues&nbsp;a&nbsp;mtx_req_recv&nbsp;message&nbsp;and&nbsp;is&nbsp;called&nbsp;when&nbsp;dealing&nbsp;with&nbsp;a&nbsp;mtx_req_send&nbsp;message&nbsp;at&nbsp;the&nbsp;host&nbsp;processor<br>
+<td width="100%"><dl><dt><a name="-queue_mtx_req_recv"><strong>queue_mtx_req_recv</strong></a>(host_pro)</dt><dd><tt>This&nbsp;function&nbsp;queues&nbsp;a&nbsp;mtx_req_recv&nbsp;message&nbsp;and&nbsp;is&nbsp;called&nbsp;when&nbsp;dealing&nbsp;with&nbsp;a&nbsp;mtx_req_send&nbsp;message&nbsp;at&nbsp;the&nbsp;host&nbsp;processor<br>
 This&nbsp;function&nbsp;DOES&nbsp;NOT&nbsp;!!&nbsp;send&nbsp;out&nbsp;the&nbsp;mtx_req_grant&nbsp;message&nbsp;by&nbsp;queueing&nbsp;that&nbsp;with&nbsp;the&nbsp;requesting&nbsp;process.&nbsp;That&nbsp;is&nbsp;done&nbsp;when&nbsp;the&nbsp;mtx_req_grant&nbsp;sender&nbsp;is&nbsp;actually&nbsp;the&nbsp;operating&nbsp;host.</tt></dd></dl>
- <dl><dt><a name="-read_simulator_input"><strong>read_simulator_input</strong></a>()</dt><dd><tt>docstring&nbsp;for&nbsp;read_simulator_input<br>
+ <dl><dt><a name="-read_simulator_input"><strong>read_simulator_input</strong></a>(infile)</dt><dd><tt>docstring&nbsp;for&nbsp;read_simulator_input<br>
 Read&nbsp;in&nbsp;all&nbsp;the&nbsp;data&nbsp;from&nbsp;the&nbsp;file&nbsp;and&nbsp;store&nbsp;the&nbsp;parsed&nbsp;lines&nbsp;as&nbsp;Operation&nbsp;and&nbsp;Mutex&nbsp;it&nbsp;in&nbsp;the&nbsp;Process&nbsp;dictionary&nbsp;defined&nbsp;in&nbsp;Process.py</tt></dd></dl>
- <dl><dt><a name="-run_basic_operation"><strong>run_basic_operation</strong></a>(host_pro)</dt><dd><tt>Run&nbsp;a&nbsp;single&nbsp;operation&nbsp;(send,&nbsp;recv)&nbsp;from&nbsp;host_pro</tt></dd></dl>
- <dl><dt><a name="-run_mtx_operation"><strong>run_mtx_operation</strong></a>(host_pro)</dt></dl>
- <dl><dt><a name="-run_simulator"><strong>run_simulator</strong></a>()</dt></dl>
-</td></tr></table><p>
-<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
-<tr bgcolor="#55aa55">
-<td colspan=3 valign=bottom>&nbsp;<br>
-<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
-    
-<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
-<td width="100%"><strong>input_filepath</strong> = '-w'</td></tr></table>
+ <dl><dt><a name="-run_basic_operation"><strong>run_basic_operation</strong></a>(host_pro)</dt><dd><tt>Run&nbsp;a&nbsp;single&nbsp;operation&nbsp;(send,&nbsp;recv,&nbsp;print)&nbsp;from&nbsp;host_pro<br>
+can&nbsp;hangle&nbsp;mutex&nbsp;operations</tt></dd></dl>
+ <dl><dt><a name="-run_mtx_operation"><strong>run_mtx_operation</strong></a>(host_pro)</dt><dd><tt>execute&nbsp;a&nbsp;single&nbsp;mtx&nbsp;operation<br>
+can&nbsp;handle&nbsp;mutex&nbsp;operations&nbsp;as&nbsp;well</tt></dd></dl>
+ <dl><dt><a name="-run_simulator"><strong>run_simulator</strong></a>()</dt><dd><tt>runs&nbsp;the&nbsp;simulator&nbsp;until&nbsp;all&nbsp;processes&nbsp;have&nbsp;finished</tt></dd></dl>
+ <dl><dt><a name="-set_IO"><strong>set_IO</strong></a>(argv)</dt><dd><tt>sets&nbsp;the&nbsp;IO&nbsp;strings&nbsp;from&nbsp;command&nbsp;line&nbsp;arguments</tt></dd></dl>
+</td></tr></table>
 </body></html>
