@@ -44,10 +44,18 @@ pydoc&nbsp;-w&nbsp;<a href="#Process">Process</a></tt></p>
 <tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
 <td colspan=2><tt>docstring&nbsp;for&nbsp;<a href="#Operation">Operation</a><br>
 <a href="#Operation">Operation</a>&nbsp;datastructure<br>
-Basic&nbsp;datastructure&nbsp;for&nbsp;the&nbsp;simulator<br>&nbsp;</tt></td></tr>
+Basic&nbsp;datastructure&nbsp;for&nbsp;the&nbsp;simulator<br>
+operation_type&nbsp;can&nbsp;be:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;recv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;send<br>
+&nbsp;&nbsp;&nbsp;&nbsp;print<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mtx_req_send<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mtx_req_recv<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mtx_req_grant_send<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mtx_req_grant_recv<br>&nbsp;</tt></td></tr>
 <tr><td>&nbsp;</td>
 <td width="100%">Methods defined here:<br>
-<dl><dt><a name="Operation-__init__"><strong>__init__</strong></a>(self, operation_type, host_process, content, logical_time, mutex, target_process<font color="#909090">=None</font>, sent_message_ID<font color="#909090">=None</font>)</dt></dl>
+<dl><dt><a name="Operation-__init__"><strong>__init__</strong></a>(self, operation_type, host_process, content, logical_time, mutex, target_process<font color="#909090">=None</font>)</dt></dl>
 
 <dl><dt><a name="Operation-print_operation"><strong>print_operation</strong></a>(self)</dt></dl>
 

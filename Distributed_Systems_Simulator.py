@@ -61,14 +61,14 @@ def run_simulator():
        for pro in Process.processes.values():
             # don't run if there are no more operations
             max_ops = max(max_ops, len(pro.operations))
-            if i < max_ops:
+            if i < len(pro.operations):
                 pro.logical_time += 1
                 if pro.status == held:
                     # if the status is held, the process is in a mutex block and can do whatever it wants
                     if pro.operations[pro.operation_counter].operation_type in ["send","recv", "print"]:
                         run_basic_operation(pro)
                     # mtx_req_send is dealt with in the above case, that means we're left dealing with mtx_req_recv, mtx_req_grant_recv, and mtx_req_grant_send  
-                    elif pro.operations[pro.operation_counter].operation_type in ["mtx_req_recv", "mtx_req_grant_recv", "mtx_req_grant_send":
+                    elif pro.operations[pro.operation_counter].operation_type in ["mtx_req_recv", "mtx_req_grant_recv", "mtx_req_grant_send"]:
                         run_mtx_operation(pro)
 
                 elif pro.operations[pro.operation_counter].mutex == True and pro.status == released:
@@ -92,13 +92,21 @@ def run_simulator():
                     if pro.operations[pro.operation_counter].operation_type in ["send","recv"]:
                         run_basic_operation(pro)
                     # mtx_req_send is dealt with in the above case, that means we're left dealing with mtx_req_recv, mtx_req_grant_recv, and mtx_req_grant_send  
-                    elif pro.operations[pro.operation_counter].operation_type == "mtx_req_recv":
+                    elif pro.operations[pro.operation_counter].operation_type in ["mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]:
+                        run_mtx_operation(pro)
 
-                        
+                elif pro.status == wanted:
+                    assert pro.operations[pro.operation_counter].mutex == False
+                    if pro.operations[pro.operation_counter].operation_type in ["mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]:
+                        run_mtx_operation(pro)
+                    elif pro.operations[pro.operation_counter].operation_type == "mtx_req_send":
+                        assert pro.operations[operation_counter].target_process.operation_type == "mtx_req_send"
+                        Process.processes[pro.operations[operation_counter].target_process] = recv_mtx_pro  
+                        queue_mtx_req_recv(pro, recv_mtx_pro)
 
 
 
-                else:
+
 
 def run_mtx_operation(host_pro):
     op = host_pro.operations[host_pro.operation_counter]
@@ -108,14 +116,15 @@ def run_mtx_operation(host_pro):
         op.status = released
 
     if op.operation_type == "mtx_req_recv":
-        # the recv msg has already been slotted into the correct place, thus we can queue the mtx_req_grant_send msg in the front, as 
+        # the recv msg has already been slotted into the correct place, thus we can queue the mtx_req_grant_send msg in the front, as
+        host_pro.logical_time = max(host_pro.logical_time, op.logical_time) 
         host_pro.operations.insert(host_pro.operation_counter, Operation(operation_type = "mtx_req_grant_send", host_process = host_pro.name, content = "mtx_req_grant_send", logical_time = host_pro.logical_time, mutex = False, target_process = op.target_process))
-
 
     elif op.operation_type == "mtx_req_grant_send":
         op.target_process.operations.insert(op.target_process.operations.operation_counter, Operation(operation_type = "mtx_req_grant_recv", host_process = target_pro.name, content = "mtx_req_grant_recv", logical_time = host_pro.logical_time, mutex = False, target_process = op.target_process))
 
     elif op.operation_type == "mtx_req_grant_recv":
+        host_pro.logical_time = max(host_pro.logical_time, op.logical_time) 
         host_pro.mtx_req_grant_recv_set.add(op.target_process)
         if len(set(Process.processes).difference(host_pro.mtx_req_grant_recv_set)) < 2:
             host_pro.state = held
@@ -148,7 +157,9 @@ def run_basic_operation(host_pro):
     elif op.operation_type == "recv":
         if (op.target_process, op.content) in host_pro.received_messages:
             if len(host_pro.received_messages[(op.target_process, op.content)]) > 0:
-                op.logical_time = max(host_pro.logical_time, min(host_pro.received_messages[(op.target_process, op.content)]))
+                timestamp = max(host_pro.logical_time, min(host_pro.received_messages[(op.target_process, op.content)]))
+                op.logical_time = timestamp
+                host_pro.logical_time = timestamp
                 host_pro.received_messages.remove(min(host_pro.received_messages[(op.target_process, op.content)]))
 
         else:
@@ -177,7 +188,7 @@ def queue_mtx_req_recv(host_pro, target_pro):
     elif target_pro.status == held 
         mutex_offset = 1
 
-        while target_pro.operations[target_pro.operation_counter + mutex_offset].mutex == True or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type == "mtx_req_recv" :
+        while target_pro.operations[target_pro.operation_counter + mutex_offset].mutex == True or target_pro.operations[target_pro.operation_counter + mutex_offset].operation_type in ["mtx_req_recv", "mtx_req_recv", "mtx_req_grant_send", "mtx_req_grant_recv"]:
             mutex_offset += 1
 
         target_pro.operations.insert(target_pro.operation_counter + mutex_offset, Operation(operation_type = "mtx_req_recv", host_process = recv_target_promtx_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
@@ -204,7 +215,7 @@ def queue_mtx_req_recv(host_pro, target_pro):
              target_pro.operations.insert(target_pro.operation_counter, Operation(operation_type = "mtx_req_recv", host_process = target_pro.name, content = "mtx_req_recv", logical_time = host_pro.logical_time, mutex = False, target_process = host_pro.name))
     
     # increment operation counter, as we did work
-    pro.operation_counter += 1
+    host_pro.operation_counter += 1
 
  
 
