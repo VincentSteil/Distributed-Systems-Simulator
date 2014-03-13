@@ -45,15 +45,31 @@ class Process:
         self.mtx_req_send_time = None             # ID is implicitely stored, time_stamp is explicitely stored
         self.mtx_req_grant_recv_set = set()
 
+    @classmethod
+    def dump_data_console(Pro):
+        """
+        debug data dump to the console
+        """
+        for pro in Pro.processes.values():
+            print(pro.name, pro.operation_counter)      
+            for ops in pro.operations:
+                ops.print_op_console()
+
 class Mutex:
         """
         docstring for Mutex
+        Mutex datastructure
+        contains multiple Operation
+        must be run in a single block
         """
         def __init__(self):
               self.operations = []
               self.mutex_operation_offset = 0
 
         def print_operation(self, output):
+            """
+            print the entire block to file output
+            """
             for op in self.operations:
                 if op.operation_type == "print":
                     print("printed", op.host_process, op.content, op.logical_time, file = output)
@@ -66,6 +82,9 @@ class Mutex:
                     print("Tried to write a mtx_msg to file")
 
         def print_op_console(self):
+            """
+            print the entire block to the console
+            """
             for op in self.operations:
                 if op.operation_type == "print":
                     print("printed", op.host_process, op.content, op.logical_time)
@@ -95,13 +114,14 @@ class Operation:
         mtx_req_grant_send
         mtx_req_grant_recv
     """
-    def __init__(self, operation_type, host_process, content, logical_time, mutex, target_process = None):
+    def __init__(self, operation_type, host_process, content, logical_time, mutex, target_process = None, multicast_logical_time = None):
         self.operation_type = operation_type
         self.host_process = host_process
         self.content = content
         self.logical_time = logical_time
         self.target_process = target_process
         self.mutex = mutex
+        self.multicast_logical_time = multicast_logical_time
 
     def __len__(self):
         return 1
@@ -136,6 +156,9 @@ class Operation:
             
                  
 def print_ordered_all_operations(outputfile):
+    """
+    print all standard print,send,recv operations to a file and those + mtx to console
+    """
     print("Start printing real ops to file")
     output = open(outputfile, 'w')
     i = 0
@@ -144,26 +167,32 @@ def print_ordered_all_operations(outputfile):
     max_ops = 1
     #reset op counters
 
+    print("")
+
+    print("Operations content of all processes")
+
     for pro in Process.processes.values():
         pro.operation_counter = 0 
-        print(pro.name, pro.operation_counter)      
+
+        print("")  
+        print(pro.name)   
+
         for ops in pro.operations:
             ops.print_op_console()
         
+    print("")
+    print("")
+    print("")
 
-
-    print("")
-    print("")
-    print("")
 
     no_more_ops = False
-
+    print("Ordered operations")
+    print("")
     while not no_more_ops:
         # flag is deactivated again if there is a process with ops in it
         no_more_ops = True
         # pro is the current process being executed
         for pro in Process.processes.values():
- #           print(pro.name, "op_counter", pro.operation_counter, "len_ops", )
 
             if pro.operation_counter < len(pro.operations):               
                 no_more_ops = False
@@ -174,7 +203,7 @@ def print_ordered_all_operations(outputfile):
                         op.print_operation(output)
                         op.print_op_console()
                         # update current_Lampard_value to logical_time of last operation in the mutex block
-                        current_Lampard_value = max(current_Lampard_value, op.operations[-1].logical_time)
+                        current_Lampard_value = max(current_Lampard_value, op.operations[-1].logical_time + 1)
                         pro.operation_counter += 1
 
                 elif op.logical_time <= current_Lampard_value:      

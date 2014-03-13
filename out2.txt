@@ -1,0 +1,17 @@
+printed p3 1111 13
+printed p4 &&&& 13
+printed p3 2222 24
+printed p1 aaaa 13
+printed p1 bbbb 14
+printed p1 cccc 15
+printed p1 dddd 16
+printed p1 eeee 17
+printed p1 ffff 24
+printed p4 $$$$ 30
+received p2 **** p4 32
+sent p4 **** p2 31
+printed p1 gggg 37
+printed p3 3333 39
+printed p4 ^^^^ 42
+printed p2 xxxx 43
+printed p2 yyyy 53

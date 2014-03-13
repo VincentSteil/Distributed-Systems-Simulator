@@ -10,7 +10,7 @@ pydoc -w Run_Distributed_Systems_Simulator
 
 to run:
     Run_Distributed_Systems_Simulator.py -i <inputfile> -o <outputfile>
-    pypy Run_Distributed_Systems_Simulator.py -i in1.txt -o out1_my.txt
+    pypy Run_Distributed_Systems_Simulator.py -i in1.txt -o out1.txt
 """
 
 

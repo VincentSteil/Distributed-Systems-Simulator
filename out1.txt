@@ -1,10 +1,10 @@
-printed p1 aaaa 1
-printed p2 xxxx 1
-printed p3 1111 1
-printed p4 &&&& 1
-printed p1 bbbb 2
-printed p2 yyyy 2
-printed p3 2222 2
-printed p4 $$$$ 2
-printed p1 cccc 3
-printed p3 3333 3
+sent p3 m2 p2 1
+printed p2 efgh 13
+printed p2 iijk 23
+sent p2 m1 p1 24
+received p1 m1 p2 25
+received p2 m2 p3 25
+sent p1 m3 p4 26
+received p4 m3 p1 27
+sent p4 m8 p1 28
+received p1 m8 p4 29
