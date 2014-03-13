@@ -1,0 +1,8 @@
+sent p2 m1 p1 1
+sent p3 m2 p2 1
+received p1 m1 p2 2
+received p2 m2 p3 2
+sent p1 m3 p4 3
+received p4 m3 p1 4
+sent p4 m8 p1 5
+received p1 m8 p4 6

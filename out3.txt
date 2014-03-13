@@ -1,0 +1,69 @@
+sent p2 m1 p1 1
+sent p5 222 p1 1
+sent p5 xxxx p2 2
+sent p5 wwwww p3 3
+sent p7 ssss p5 1
+sent p7 aaaa p1 2
+sent p7 aaaa p2 3
+printed p1 aaaa 1
+printed p4 &&&& 1
+printed p6 yyyy 1
+printed p8 f 1
+printed p9 a 1
+printed p1 bbbb 2
+printed p2 xxxx 2
+printed p4 $$$$ 2
+printed p9 b 2
+printed p1 cccc 3
+printed p2 yyyy 3
+printed p9 c 3
+printed p1 dddd 4
+printed p2 zzzz 4
+printed p7 m1 4
+printed p1 aaaaa 5
+printed p2 wwww 5
+printed p1 bbbba 6
+printed p2 xxxx 6
+printed p1 cccca 7
+printed p1 dddda 8
+printed p1 aaaab 9
+printed p1 bbbbb 10
+printed p1 ccccb 11
+printed p1 ddddb 12
+printed p1 aaaac 13
+received p1 m1 p2 14
+sent p1 m1 p3 15
+printed p1 bbbbc 16
+printed p1 ccccc 17
+printed p1 ddddc 18
+printed p2 yyyy 7
+received p3 m1 p1 16
+printed p2 zzzz 8
+sent p2 tttt p5 9
+printed p2 wwww 10
+printed p2 xxxx 11
+printed p2 yyyy 12
+printed p2 zzzz 13
+printed p2 wwww 14
+printed p2 xxxx 15
+printed p2 yyyy 16
+sent p2 m2 p7 17
+printed p3 1111 17
+received p7 m2 p2 18
+printed p2 zzzz 18
+received p2 aaaa p7 19
+printed p3 2222 18
+printed p1 aaaad 19
+printed p3 3333 19
+printed p1 bbbbd 20
+printed p2 wwww 20
+printed p1 ccccd 21
+printed p1 ddddd 22
+printed p1 aaaae 23
+printed p1 bbbbe 24
+printed p1 cccce 25
+sent p1 tttt p5 26
+received p5 tttt p1 27
+sent p5 dddd p7 28
+received p5 ssss p7 29
+printed p1 dddde 27
