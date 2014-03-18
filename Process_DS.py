@@ -5,7 +5,7 @@ s1008380
 Distributed Systems Practical
 Process.py
 Pydoc:
-pydoc -w Process
+pydoc -w Process_DS
 """
 
 from __future__ import print_function
